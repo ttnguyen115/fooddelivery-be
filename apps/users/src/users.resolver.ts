@@ -12,7 +12,7 @@ import { ActivationDTO, RegisterDTO } from "./dtos/user.dto";
 import { User } from "./entities/user.entity";
 
 // types
-import { ActivationResponse, RegisterResponse } from "./types/user.type";
+import { ActivationResponse, LoginResponse, RegisterResponse } from "./types/user.type";
 
 @Resolver("User")
 export class UsersResolver {
@@ -40,6 +40,14 @@ export class UsersResolver {
         @Context() context: { res: Response }
     ): Promise<ActivationResponse> {
         return await this.userService.activateUser(activationDTO, context.res);
+    }
+
+    @Mutation(() => LoginResponse)
+    async login(
+        @Args('email') email: string,
+        @Args('password') password: string,
+    ): Promise<LoginResponse> {
+        return this.userService.login({ email, password });
     }
 
     @Query(() => [User])
