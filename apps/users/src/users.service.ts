@@ -10,6 +10,8 @@ import { EmailService } from "./email/email.service";
 
 // DTOs
 import { ActivationDTO, LoginDTO, RegisterDTO } from "./dtos/user.dto";
+
+// utils
 import { TokenSender } from "./utils/sendToken";
 
 interface UserData {
@@ -81,8 +83,8 @@ export class UsersService {
                 refreshToken: null,
                 error: {
                     message: "Invalid email or password",
-                }
-            }
+                },
+            };
         }
     }
 
@@ -139,5 +141,17 @@ export class UsersService {
 
     async comparePassword(password: string, hashedPassword: string): Promise<boolean> {
         return await bcrypt.compare(password, hashedPassword);
+    }
+
+    async getLoggedInUser(req: any) {
+        const { user, accesstoken: accessToken, refreshtoken: refreshToken } = req;
+        return { user, accessToken, refreshToken };
+    }
+
+    async logout(req: any) {
+        req.user = null;
+        req.refreshtoken = null;
+        req.accesstoken = null;
+        return { message: "Logout successfully!" }
     }
 }

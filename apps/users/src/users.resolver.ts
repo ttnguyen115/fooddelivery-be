@@ -1,6 +1,6 @@
-import { BadRequestException } from "@nestjs/common";
+import { BadRequestException, UseGuards } from "@nestjs/common";
 import { Args, Context, Mutation, Query, Resolver } from "@nestjs/graphql";
-import { type Response } from "express";
+import { type Request, type Response } from "express";
 
 // services
 import { UsersService } from "./users.service";
@@ -12,7 +12,10 @@ import { ActivationDTO, RegisterDTO } from "./dtos/user.dto";
 import { User } from "./entities/user.entity";
 
 // types
-import { ActivationResponse, LoginResponse, RegisterResponse } from "./types/user.type";
+import { ActivationResponse, LoginResponse, LogoutResponse, RegisterResponse } from "./types/user.type";
+
+// guard
+import { AuthGuard } from "./guards/auth.guard";
 
 @Resolver("User")
 export class UsersResolver {
@@ -43,11 +46,20 @@ export class UsersResolver {
     }
 
     @Mutation(() => LoginResponse)
-    async login(
-        @Args('email') email: string,
-        @Args('password') password: string,
-    ): Promise<LoginResponse> {
+    async login(@Args("email") email: string, @Args("password") password: string): Promise<LoginResponse> {
         return this.userService.login({ email, password });
+    }
+
+    @Query(() => LoginResponse)
+    @UseGuards(AuthGuard)
+    async getLoggedInUser(@Context() context: { req: Request }): Promise<LoginResponse> {
+        return await this.userService.getLoggedInUser(context.req);
+    }
+
+    @Query(() => LogoutResponse)
+    @UseGuards(AuthGuard)
+    async logoutUser(@Context() context: { req: Request }): Promise<LogoutResponse> {
+        return await this.userService.logout(context.req);
     }
 
     @Query(() => [User])
